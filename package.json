@@ -1,0 +1,47 @@
+{
+  "name": "bi-service-test-utils",
+  "version": "1.0.0",
+  "description": "Common initialization logic for integration testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --ui bdd --colors --check-leaks -t 5000 --reporter spec 'test/*.js'",
+    "docker:test": "docker-compose run --rm test ; exit_code=$? ; docker-compose down ; exit $exit_code"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BohemiaInteractive/bi-service-test-utils.git"
+  },
+  "keywords": [
+    "bi-service",
+    "testing"
+  ],
+  "files": [
+      "index.js",
+      "LICENSE"
+  ],
+  "author": "Bohemia Interactive",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/BohemiaInteractive/bi-service-test-utils/issues"
+  },
+  "homepage": "https://github.com/BohemiaInteractive/bi-service-test-utils#readme",
+  "peerDependencies": {
+      "bi-config": "^2.0.0",
+      "bluebird": "^3.5.1",
+      "bi-db-migrations": "*"
+  },
+  "devDependencies": {
+      "bluebird": "^3.5.1",
+      "pg": "^4.5.0",
+      "pg-hstore": "2.3.*",
+      "pg-native": "^1.10.1",
+      "mysql": "^2.15.0",
+      "sequelize": "^3.31.2",
+      "chai": "^3.5.0",
+      "chai-as-promised": "^5.3.0",
+      "mocha": "^2.5.3",
+      "sinon": "^1.17.3",
+      "sinon-chai": "^2.8.0",
+      "sinon-as-promised": "^4.0.0"
+  }
+}
