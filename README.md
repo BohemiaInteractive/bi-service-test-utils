@@ -4,6 +4,10 @@
 * Runs service db migrations before executing tests
 * Cleans up after itself after tests execution
 
+```javascript
+require('bi-service-test-utils')('<service-entrypoint-file-path>');
+```
+
 #### Tests
 
 Requires:  
