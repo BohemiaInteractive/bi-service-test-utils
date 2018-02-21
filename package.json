@@ -17,6 +17,7 @@
   ],
   "files": [
       "index.js",
+      "README.md",
       "LICENSE"
   ],
   "author": "Bohemia Interactive",
