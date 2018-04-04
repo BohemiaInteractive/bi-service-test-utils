@@ -2,43 +2,79 @@ const Promise = require('bluebird');
 const path    = require('path');
 const fs      = Promise.promisifyAll(require('fs'));
 
-module.exports = function(serviceEntrypointPath) {
+/**
+ * @param {String} serviceEntrypointPath
+ * @param {Object} options
+ * @param {Object|Boolean} [options.sqlMigrations=true]
+ * @param {Boolean}        [options.sqlMigrations.verbose]
+ * @param {String}         [options.sqlMigrations.mig-dir]
+ * @return {undefined}
+ */
+module.exports = function(serviceEntrypointPath, options) {
+    options = options || {};
     let env = process.env.NODE_ENV;
     if (env !== 'test') {
         throw new Error(`Invalid environment. Expected NODE_ENV to equal "test" but got "${env}"`);
     }
 
-    const config     = require('bi-config');
-    const Migration  = require('bi-db-migrations');
+    options = Object.assign({
+        sqlMigrations: true, //boolean or options object provided to the migrateCmd
+    }, options);
+
+    let Migration, sequelize;
+
+    const migrateOptions = {
+        verbose: false,
+        'mig-dir': 'migrations'
+    };
+
+    const config = require('bi-config');
     config.initialize();
 
-    const service   = require(serviceEntrypointPath);
-    const sequelize = service.sqlModelManager.sequelize;
+    const service = require(serviceEntrypointPath);
+
+    if (options.sqlMigrations) {
+        Migration  = require('bi-db-migrations');
+        sequelize = service.sqlModelManager.sequelize;
+
+        if (typeof options.sqlMigrations === 'object'
+            && options.sqlMigrations !== null
+        ) {
+            Object.assign(migrateOptions, options.sqlMigrations);
+        }
+    }
 
     before(function() {
         this.service = service;
         this.migrateDB = migrateDB;
         this.emptyDatabase = emptyDatabase;
 
-        return ensureEmptyDatabase(sequelize).then(function() {
-            return migrateDB();
-        }).then(function(results) {
+        let p;
+
+        if (options.sqlMigrations) {
+            p = ensureEmptyDatabase(sequelize).then(function() {
+                return migrateDB();
+            });
+        } else {
+            p = Promise.resolve();
+        }
+
+        return p.then(function(results) {
             return service.listen();
         });
     });
 
     after(function() {
-        return emptyDatabase(sequelize);
+        if (options.sqlMigrations) {
+            return emptyDatabase(sequelize);
+        }
     });
 
     /**
      */
     function migrateDB() {
         let mig = new Migration.Migration();
-        return mig.migrateCmd({
-            verbose: false,
-            'mig-dir': 'migrations'
-        });
+        return mig.migrateCmd(migrateOptions);
     }
 }
 
